@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upcoming Space Launches</title>
+    <!-- Add Bootstrap CSS link -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+
+      header {
+        background-color: black;
+        color: white;
+        padding: 1em;
+        text-align: center;
+      }
+
+      main {
+        max-width: 800px;
+        margin: 2em auto;
+        padding: 1em;
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Upcoming Space Launches</h1>
+    </header>
+
+    <main class="container">
+      <ul id="launch-list" class="list-group"></ul>
+    </main>
+
+    <!-- Add Bootstrap JS and Popper.js scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      const apiUrl = "https://ll.thespacedevs.com/2.0.0/launch/upcoming/";
+
+      function updateTimers() {
+        const now = new Date();
+
+        fetch(apiUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data); // Log the entire API response to the console
+
+            const launchList = document.getElementById("launch-list");
+            launchList.innerHTML = "";
+
+            data.results.forEach((launch) => {
+              const listItem = document.createElement("li");
+              listItem.className = "list-group-item";
+
+              const launchTime = new Date(launch.window_start);
+              const timeRemaining = launchTime - now;
+
+              const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+              const hours = Math.floor(
+                (timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+              );
+              const minutes = Math.floor(
+                (timeRemaining % (1000 * 60 * 60)) / (1000 * 60)
+              );
+
+              listItem.innerHTML = `<strong>${launch.name}</strong><br>
+                                            Window Start: ${launch.window_start}<br>
+                                            Time Remaining: ${days}d ${hours}h ${minutes}m`;
+              launchList.appendChild(listItem);
+            });
+          })
+          .catch((error) => console.error("Error fetching data:", error));
+      }
+
+      // Update timers every second
+      setInterval(updateTimers, 1000);
+
+      // Initial call to display the data
+      updateTimers();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Tracker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: whitesmoke;
+            color: #343a40;
+            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+        }      
+        .container {
+            max-width: 800px;
+            margin: 2em auto;
+            padding: 1em;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            max-width: 900px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        header{
+            background-color: black;
+            color: white;
+            padding: 1em;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background-color: black;
+            border-color: black;
+        }
+
+        .btn-primary:hover {
+            background-color: grey;
+            border-color: black;
+        }
+
+        #map {
+            height: 400px;
+            margin-top: 20px;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
+
+        #satelliteLocation {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid black;
+            border-radius: 5px;
+            background-color: whitesmoke;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Satellite Tracker</h1>
+    </header>
+    <div class="container">
+        <div class="mt-3">
+            <button onclick="trackISS()" class="btn btn-primary">Track ISS</button>
+        </div>
+        <div id="map"></div>
+        <div class="mt-4">
+            <p id="satelliteLocation">Click "Track ISS" to get the current location of the International Space Station.</p>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- Include your JavaScript code directly in the HTML file -->
+    <script>
+        var map;
+
+        function trackISS() {
+            // Fetch data for the International Space Station (ISS)
+            fetchSatelliteData(25544)
+                .then(data => {
+                    // Display ISS location on the map
+                    updateMap(data);
+
+                    // Display ISS location details on the webpage
+                    document.getElementById('satelliteLocation').innerHTML = `Current Location:<br>Latitude: ${data.latitude}<br>Longitude: ${data.longitude}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching ISS data:', error);
+                    document.getElementById('satelliteLocation').innerHTML = 'Error fetching ISS data. Please try again later.';
+                });
+        }
+
+        function fetchSatelliteData(satelliteID) {
+            // Make API request to Open Notify's ISS Tracker endpoint
+            return fetch(`https://api.wheretheiss.at/v1/satellites/${satelliteID}`)
+                .then(response => response.json());
+        }
+
+        function updateMap(satelliteData) {
+            if (!map) {
+                // Initialize the map
+                map = L.map('map').setView([satelliteData.latitude, satelliteData.longitude], 3);
+
+                // Add a tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+            } else {
+                // Update the map position
+                map.setView([satelliteData.latitude, satelliteData.longitude], map.getZoom());
+            }
+
+            // Add a marker at the ISS position
+            L.marker([satelliteData.latitude, satelliteData.longitude]).addTo(map)
+                .bindPopup(`ISS Location<br>Latitude: ${satelliteData.latitude}<br>Longitude: ${satelliteData.longitude}`)
+                .openPopup();
+        }
+    </script>
+</body>
+
+</html>
